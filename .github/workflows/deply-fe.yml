@@ -1,0 +1,50 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the main branch
+    paths:
+      - 'frontend/**' # Adjust path to your React application
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: List files
+        run: ls -la frontend  # List files to ensure the frontend directory contains the Dockerfile
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to Docker Hub
+        run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+      - name: Build Docker image
+        run: docker buildx build --platform linux/arm64 -f frontend/Dockerfile -t harith47/reactimgprocess:latest --output type=docker frontend
+        # Make sure 'frontend' is the correct context directory containing your Dockerfile
+
+      - name: List Docker images
+        run: docker images  # Debugging step to confirm image exists
+
+      - name: Publish image to Docker Hub
+        run: docker push harith47/reactimgprocess:latest
+
+  deploy:
+    needs: build
+    runs-on: self-hosted  # Ensure you have a self-hosted runner set up
+    steps:
+      - name: Pull image from Docker Hub
+        run: docker pull harith47/reactimgprocess:latest
+
+      - name: Delete old container
+        run: docker rm -f react-app-container || true  # Use || true to prevent errors if the container doesn't exist
+
+      - name: Run Docker container
+        run: docker run --platform linux/arm64 -d -p 3000:80 --name react-app-container harith47/reactimgprocess:latest
+
+      - name: Clean up dangling images
+        run: docker image prune -f  # Clean up to save disk space
