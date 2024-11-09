@@ -7,7 +7,7 @@ WORKDIR /app
 
 # Installing dependencies
 COPY ./package.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copying all the files in our project
 COPY . .
@@ -24,7 +24,7 @@ RUN npm run build
 FROM nginx:1.23-alpine
 WORKDIR /usr/share/nginx/html
 RUN rm -rf *
-COPY --from=build /build .
+COPY --from=build /app/build .
 
 # Copy custom Nginx configuration file
 COPY default.conf /etc/nginx/conf.d/default.conf
