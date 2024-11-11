@@ -24,27 +24,27 @@ jobs:
         run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
       - name: Build Docker image
-        run: docker buildx build --platform linux/arm64 -f backend/Dockerfile -t harith47/nodeimageprocess:latest --output type=docker backend
+        run: docker buildx build --platform linux/arm64 -f backend/Dockerfile -t monishra/backend:latest --output type=docker backend
         # Make sure 'backend' is the correct context directory containing your Dockerfile
 
       - name: List Docker images
         run: docker images  # Debugging step to confirm image exists
 
       - name: Publish image to Docker Hub
-        run: docker push harith47/nodeimageprocess:latest
+        run: docker push monishra/backend:latest
 
   deploy:
     needs: build
     runs-on: self-hosted  # Use a specific self-hosted runner labackendl if necessary
     steps:
       - name: Pull image from Docker Hub
-        run: docker pull harith47/nodeimageprocess:latest
+        run: docker pull monishra/backend:latest
 
       - name: Delete old container
         run: docker rm -f nodejs-app-container || true  # Use || true to prevent errors if the container doesn't exist
 
       - name: Run Docker container
-        run: docker run --platform linux/arm64 -d -p 5000:5000 --name nodejs-app-container harith47/nodeimageprocess:latest
+        run: docker run --platform linux/arm64 -d -p 5000:5000 --name nodejs-app-container monishra/backend:latest
 
       - name: Clean up dangling images
         run: docker image prune -f  # Clean up to save disk space
