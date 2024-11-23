@@ -1,10 +1,8 @@
-
 const express = require('express');
 const cors = require('cors'); // Import cors
 const connectDB = require('./config/db');
 const cardRoutes = require('./routes/cardRoutes');
 require('dotenv').config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
